@@ -1,0 +1,21 @@
+function [x, P] = mu_g(x, P, yacc, Ra, g0)
+
+    q   = x(1:4);
+    b_w = x(5:7);
+    b_a = x(8:10);
+
+    % calculate yacc = h(x)
+    hx  = Qq(q)' * g0 + b_a;
+    
+    % calculate jacobian(h(x),x)
+    [Q0, Q1, Q2, Q3] = dQqdq(q);
+    dhx = [Q0'*g0 Q1'*g0 Q2'*g0 Q3'*g0 zeros(3) eye(3)];
+    
+    % calculate inovation covariance and kalman gain
+    S = dhx * P * dhx' + Ra;
+    K = P * dhx' / S;
+
+    % update
+    x = x + K * ( yacc - hx );
+    P = P - K * S * K'; 
+end
