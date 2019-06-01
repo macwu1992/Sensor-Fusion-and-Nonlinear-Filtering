@@ -25,21 +25,35 @@ import('com.liu.sensordata.*');  % Used to receive data.
 
 %% Filter settings
 t0 = [];  % Initial time (initialize on first data received)
-nx = 10;  % [orientation_quat bias_w bias_acc ]
+nx = 4;  % [orientation_quat bias_w bias_acc ]
 
 % Add your filter settings here.
-Rw = eye(3)*1e-3;
-Ra = eye(3)*1e-1;
-Rm = eye(3)*1e-6;
+
+% Rw = eye(3)*1e-3;
+% Ra = eye(3)*1e-1;
+% Rm = eye(3)*1e-6;
+Ra= 1.0e-03 * ...
+    [0.0489    0.0132   -0.0118
+     0.0132    0.0688   -0.0131
+    -0.0118   -0.0131    0.2227];
+Rm = [0.0273    0.0213   -0.0069
+      0.0213    0.1144   -0.0266
+     -0.0069   -0.0266    0.1134] * 1e-1;
+Rw = 1e-5 * ...
+    [0.0887    0.0173    0.0003
+     0.0173    0.0930    0.0144
+     0.0003    0.0144    0.1240];
+
 
 g0 = [0 0 9.8]';
 rangeSkipAcc = 0.2;  % accept acc meas. if  80%|g0| < |acc| < 120%|g0|
-m0 = 1e-4*[0; 0.2041; -0.5931];
+m0 = [0 17.7 -45.4]';
 L = norm(m0);
+alpha = 0.01;
 
 % Current filter state.
-x = [1;0;0;0; zeros(3,1); zeros(3,1)];
-P = blkdiag(eye(4), zeros(6));
+x = [1;0;0;0];
+P = eye(4);
 
 % Saved filter states.
 xhat = struct(  't', zeros(1, 0),...
@@ -87,6 +101,10 @@ try
         if ~any(isnan(gyr))  % Gyro measurements are available.
             [x, P] = tu_qw( x, P, gyr, 0.01, Rw);
             [x, P] = mu_normalizeQ(x, P);
+        else
+            Rq = eye(4)*0.1;
+            [x, P] = tu_qw_randwalk( x, P, Rq);
+            [x, P] = mu_normalizeQ(x, P);
         end
         
         acc = data(1, 2:4)';
@@ -103,7 +121,6 @@ try
         
         mag = data(1, 8:10)';
         if ~any(isnan(mag))  % Mag measurements are available.
-           alpha = 0.01;
             L = (1-alpha)*L+alpha*norm(mag);
             if abs(L-norm(mag)) < 0.1*L
                 [x, P] = mu_m(x, P, mag, Rm, m0);
