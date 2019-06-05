@@ -47,6 +47,7 @@ Rw = 1e-5 * ...
 
 g0 = [0 0 9.8]';
 rangeSkipAcc = 0.2;  % accept acc meas. if  80%|g0| < |acc| < 120%|g0|
+rangeSkipMag = 0.1;
 m0 = [0 17.7 -45.4]';
 L = norm(m0);
 alpha = 0.01;
@@ -122,7 +123,7 @@ try
         mag = data(1, 8:10)';
         if ~any(isnan(mag))  % Mag measurements are available.
             L = (1-alpha)*L+alpha*norm(mag);
-            if abs(L-norm(mag)) < 0.1*L
+            if abs(L-norm(mag)) < L*rangeSkipMag
                 [x, P] = mu_m(x, P, mag, Rm, m0);
                 [x, P] = mu_normalizeQ(x, P);
                 ownView.setMagDist(0);
