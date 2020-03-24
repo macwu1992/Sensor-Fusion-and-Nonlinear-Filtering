@@ -1,5 +1,5 @@
-# Sensor-Fusion-and-Nonlinear-Filtering-SSY345
-Repository for the course "Sensor Fusion and Nonlinear Filtering" - SSY345 at Chalmers University
+# Sensor-Fusion-and-Nonlinear-Filtering
+Repository for the course "Sensor Fusion and Nonlinear Filtering"
 
 
 ## Final Assignment: Orientation estimation of a cellphone using EKF and Sensor Fusion
